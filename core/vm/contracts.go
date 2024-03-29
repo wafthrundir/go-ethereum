@@ -1154,7 +1154,7 @@ type schnorrVerify struct{}
 // This method does not require any overflow checking as the input size gas costs
 // required for anything significant is so high it's impossible to pay for.
 func (c *schnorrVerify) RequiredGas(input []byte) uint64 {
-	return uint64(len(input)+31)/32*params.Sha256PerWordGas + params.Sha256BaseGas
+	return uint64(len(input)+31)/32*params.SchnorrPerWordGas + params.SchnorrBaseGas
 }
 func (c *schnorrVerify) Run(input []byte) ([]byte, error) {
 	log.Info("schnorrVerify", "input", input, "len", len(input))

@@ -1190,8 +1190,6 @@ func (c *schnorrVerify) Run(input []byte) ([]byte, error) {
 	}
 }
 
-const ()
-
 var (
 	abiTrue  = [32]byte{31: 1}
 	abiFalse = [32]byte{}

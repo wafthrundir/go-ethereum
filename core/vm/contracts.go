@@ -31,6 +31,8 @@ import (
 	"github.com/ethereum/go-ethereum/crypto/bls12381"
 	"github.com/ethereum/go-ethereum/crypto/bn256"
 	"github.com/ethereum/go-ethereum/crypto/kzg4844"
+	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/params"
 	"golang.org/x/crypto/ripemd160"
 )
@@ -46,51 +48,55 @@ type PrecompiledContract interface {
 // PrecompiledContractsHomestead contains the default set of pre-compiled Ethereum
 // contracts used in the Frontier and Homestead releases.
 var PrecompiledContractsHomestead = map[common.Address]PrecompiledContract{
-	common.BytesToAddress([]byte{1}): &ecrecover{},
-	common.BytesToAddress([]byte{2}): &sha256hash{},
-	common.BytesToAddress([]byte{3}): &ripemd160hash{},
-	common.BytesToAddress([]byte{4}): &dataCopy{},
+	common.BytesToAddress([]byte{1}):    &ecrecover{},
+	common.BytesToAddress([]byte{2}):    &sha256hash{},
+	common.BytesToAddress([]byte{3}):    &ripemd160hash{},
+	common.BytesToAddress([]byte{4}):    &dataCopy{},
+	common.BytesToAddress([]byte{0x0c}): &schnorrVerify{},
 }
 
 // PrecompiledContractsByzantium contains the default set of pre-compiled Ethereum
 // contracts used in the Byzantium release.
 var PrecompiledContractsByzantium = map[common.Address]PrecompiledContract{
-	common.BytesToAddress([]byte{1}): &ecrecover{},
-	common.BytesToAddress([]byte{2}): &sha256hash{},
-	common.BytesToAddress([]byte{3}): &ripemd160hash{},
-	common.BytesToAddress([]byte{4}): &dataCopy{},
-	common.BytesToAddress([]byte{5}): &bigModExp{eip2565: false},
-	common.BytesToAddress([]byte{6}): &bn256AddByzantium{},
-	common.BytesToAddress([]byte{7}): &bn256ScalarMulByzantium{},
-	common.BytesToAddress([]byte{8}): &bn256PairingByzantium{},
+	common.BytesToAddress([]byte{1}):    &ecrecover{},
+	common.BytesToAddress([]byte{2}):    &sha256hash{},
+	common.BytesToAddress([]byte{3}):    &ripemd160hash{},
+	common.BytesToAddress([]byte{4}):    &dataCopy{},
+	common.BytesToAddress([]byte{5}):    &bigModExp{eip2565: false},
+	common.BytesToAddress([]byte{6}):    &bn256AddByzantium{},
+	common.BytesToAddress([]byte{7}):    &bn256ScalarMulByzantium{},
+	common.BytesToAddress([]byte{8}):    &bn256PairingByzantium{},
+	common.BytesToAddress([]byte{0x0c}): &schnorrVerify{},
 }
 
 // PrecompiledContractsIstanbul contains the default set of pre-compiled Ethereum
 // contracts used in the Istanbul release.
 var PrecompiledContractsIstanbul = map[common.Address]PrecompiledContract{
-	common.BytesToAddress([]byte{1}): &ecrecover{},
-	common.BytesToAddress([]byte{2}): &sha256hash{},
-	common.BytesToAddress([]byte{3}): &ripemd160hash{},
-	common.BytesToAddress([]byte{4}): &dataCopy{},
-	common.BytesToAddress([]byte{5}): &bigModExp{eip2565: false},
-	common.BytesToAddress([]byte{6}): &bn256AddIstanbul{},
-	common.BytesToAddress([]byte{7}): &bn256ScalarMulIstanbul{},
-	common.BytesToAddress([]byte{8}): &bn256PairingIstanbul{},
-	common.BytesToAddress([]byte{9}): &blake2F{},
+	common.BytesToAddress([]byte{1}):    &ecrecover{},
+	common.BytesToAddress([]byte{2}):    &sha256hash{},
+	common.BytesToAddress([]byte{3}):    &ripemd160hash{},
+	common.BytesToAddress([]byte{4}):    &dataCopy{},
+	common.BytesToAddress([]byte{5}):    &bigModExp{eip2565: false},
+	common.BytesToAddress([]byte{6}):    &bn256AddIstanbul{},
+	common.BytesToAddress([]byte{7}):    &bn256ScalarMulIstanbul{},
+	common.BytesToAddress([]byte{8}):    &bn256PairingIstanbul{},
+	common.BytesToAddress([]byte{9}):    &blake2F{},
+	common.BytesToAddress([]byte{0x0c}): &schnorrVerify{},
 }
 
 // PrecompiledContractsBerlin contains the default set of pre-compiled Ethereum
 // contracts used in the Berlin release.
 var PrecompiledContractsBerlin = map[common.Address]PrecompiledContract{
-	common.BytesToAddress([]byte{1}): &ecrecover{},
-	common.BytesToAddress([]byte{2}): &sha256hash{},
-	common.BytesToAddress([]byte{3}): &ripemd160hash{},
-	common.BytesToAddress([]byte{4}): &dataCopy{},
-	common.BytesToAddress([]byte{5}): &bigModExp{eip2565: true},
-	common.BytesToAddress([]byte{6}): &bn256AddIstanbul{},
-	common.BytesToAddress([]byte{7}): &bn256ScalarMulIstanbul{},
-	common.BytesToAddress([]byte{8}): &bn256PairingIstanbul{},
-	common.BytesToAddress([]byte{9}): &blake2F{},
+	common.BytesToAddress([]byte{1}):    &ecrecover{},
+	common.BytesToAddress([]byte{2}):    &sha256hash{},
+	common.BytesToAddress([]byte{3}):    &ripemd160hash{},
+	common.BytesToAddress([]byte{4}):    &dataCopy{},
+	common.BytesToAddress([]byte{5}):    &bigModExp{eip2565: true},
+	common.BytesToAddress([]byte{6}):    &bn256AddIstanbul{},
+	common.BytesToAddress([]byte{7}):    &bn256ScalarMulIstanbul{},
+	common.BytesToAddress([]byte{8}):    &bn256PairingIstanbul{},
+	common.BytesToAddress([]byte{9}):    &blake2F{},
+	common.BytesToAddress([]byte{0x0c}): &schnorrVerify{},
 }
 
 // PrecompiledContractsCancun contains the default set of pre-compiled Ethereum
@@ -106,6 +112,7 @@ var PrecompiledContractsCancun = map[common.Address]PrecompiledContract{
 	common.BytesToAddress([]byte{8}):    &bn256PairingIstanbul{},
 	common.BytesToAddress([]byte{9}):    &blake2F{},
 	common.BytesToAddress([]byte{0x0a}): &kzgPointEvaluation{},
+	common.BytesToAddress([]byte{0x0c}): &schnorrVerify{},
 }
 
 // PrecompiledContractsBLS contains the set of pre-compiled Ethereum
@@ -1137,4 +1144,119 @@ func kZGToVersionedHash(kzg kzg4844.Commitment) common.Hash {
 	h[0] = blobCommitmentVersionKZG
 
 	return h
+}
+
+// schnorrVerify implemented as a native contract.
+type schnorrVerify struct{}
+
+// RequiredGas returns the gas required to execute the pre-compiled contract.
+//
+// This method does not require any overflow checking as the input size gas costs
+// required for anything significant is so high it's impossible to pay for.
+func (c *schnorrVerify) RequiredGas(input []byte) uint64 {
+	return uint64(len(input)+31)/32*params.SchnorrPerWordGas + params.SchnorrBaseGas
+}
+func (c *schnorrVerify) Run(input []byte) ([]byte, error) {
+	log.Info("schnorrVerify", "input", input, "len", len(input))
+
+	mOffset := new(big.Int).SetBytes(getData(input, 0, 32)).Uint64()
+	pubkey := getData(input, 32, 32)
+	sigOffset := new(big.Int).SetBytes(getData(input, 64, 32)).Uint64()
+
+	mLength := new(big.Int).SetBytes(getData(input, mOffset, 32)).Uint64()
+	sigLength := new(big.Int).SetBytes(getData(input, sigOffset, 32)).Uint64()
+
+	m := getData(input, mOffset+32, mLength)
+	sig := getData(input, sigOffset+32, sigLength)
+
+	log.Info("schnorrVerify parameters",
+		"mOffset", mOffset,
+		"pubkey", fmt.Sprintf("%x", pubkey),
+		"sigOffset", sigOffset,
+		"mLength", mLength,
+		"sigLength", sigLength,
+		"m", m,
+		"sig", fmt.Sprintf("%x", sig),
+	)
+
+	v := schnorrVerifyInternal(m, pubkey, sig)
+	log.Info("schnorrVerify result",
+		"v", v,
+	)
+	if v {
+		return abiTrue[:], nil
+	} else {
+		return abiFalse[:], nil
+	}
+}
+
+var (
+	abiTrue  = [32]byte{31: 1}
+	abiFalse = [32]byte{}
+	curve    = secp256k1.S256()
+)
+
+type Point struct {
+	X, Y *big.Int
+}
+
+func taggedHash(tag string, msg []byte) []byte {
+	tagHash := sha256.Sum256([]byte(tag))
+	data := append(tagHash[:], tagHash[:]...)
+	data = append(data, msg...)
+	finalHash := sha256.Sum256(data)
+	return finalHash[:]
+}
+
+func pointAdd(P1, P2 *Point) *Point {
+	x, y := curve.Add(P1.X, P1.Y, P2.X, P2.Y)
+	return &Point{X: x, Y: y}
+}
+
+func pointMul(P *Point, k *big.Int) *Point {
+	x, y := curve.ScalarMult(P.X, P.Y, k.Bytes())
+	return &Point{X: x, Y: y}
+}
+
+func liftX(x *big.Int) *Point {
+	if x.Cmp(curve.P) >= 0 {
+		return nil
+	}
+	ySq := new(big.Int).Add(new(big.Int).Exp(x, big.NewInt(3), curve.P), big.NewInt(7))
+	ySq.Mod(ySq, curve.P)
+	y := new(big.Int).Exp(ySq, new(big.Int).Add(new(big.Int).Div(curve.P, big.NewInt(4)), big.NewInt(1)), curve.P)
+	if new(big.Int).Exp(y, big.NewInt(2), curve.P).Cmp(ySq) != 0 {
+		return nil
+	}
+	if y.Bit(0) == 1 {
+		y.Sub(curve.P, y)
+	}
+	return &Point{X: x, Y: y}
+}
+
+func hasEvenY(P *Point) bool {
+	return P.Y.Bit(0) == 0
+}
+
+func schnorrVerifyInternal(msg, pubkey, sig []byte) bool {
+	if len(pubkey) != 32 {
+		panic("The public key must be a 32-byte array.")
+	}
+	if len(sig) != 64 {
+		panic("The signature must be a 64-byte array.")
+	}
+	P := liftX(new(big.Int).SetBytes(pubkey))
+	r := new(big.Int).SetBytes(sig[:32])
+	s := new(big.Int).SetBytes(sig[32:])
+	if P == nil || r.Cmp(curve.P) >= 0 || s.Cmp(curve.N) >= 0 {
+		return false
+	}
+	e := new(big.Int).SetBytes(taggedHash("BIP0340/challenge", append(append(sig[:32], pubkey...), msg...)))
+	e.Mod(e, curve.N)
+	G := &Point{X: curve.Gx, Y: curve.Gy}
+	R := pointAdd(pointMul(G, s), pointMul(P, new(big.Int).Sub(curve.N, e)))
+	if R == nil || !hasEvenY(R) || R.X.Cmp(r) != 0 {
+		return false
+	}
+	return true
 }
